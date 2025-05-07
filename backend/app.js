@@ -1,22 +1,27 @@
-const express = require('express');
-const cors = require('cors');
+import express from 'express';
+import cors from 'cors';
+import router from './routes/appRoutes.js';
+import cookieParser from 'cookie-parser';
+import dotenv from 'dotenv';
+import { dirname, join, resolve } from 'path';
+import { fileURLToPath } from 'url';
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const app = express();
-const path = require('path');
-const appRoutes = require('./routes/appRoutes');
-const cookieParser = require('cookie-parser');
-
-require('dotenv').config();
-
 
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(join(__dirname, "public")));
 app.use(express.urlencoded({ extended: true }));
 
 app.set('view engine', 'ejs');
-app.set('views', path.resolve('./views'));
+app.set('views', resolve('./views'));
 
-app.use('/', appRoutes);
+app.use('/', router);
 
-module.exports = app;
+export default app;
