@@ -1,21 +1,24 @@
-const bcrypt = require("bcrypt");
-const { body, validationResult } = require("express-validator");
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-const jwt = require("jsonwebtoken");
-require("dotenv").config();
+import { hash, compare } from "bcrypt";
+import { body, validationResult } from "express-validator";
+import { PrismaClient } from '@prisma/client';
+import jwt from "jsonwebtoken";
+import dotenv from 'dotenv';
 
-// Home page route
-async function homePage(req, res) {
+dotenv.config();
+
+const prisma = new PrismaClient();
+
+// Home page
+export async function homePage(req, res) {
   res.render("home", { user: req.user });
 }
 
-// Sign-up page route
-async function signUpGet(req, res) {
+// Sign-up page 
+export async function signUpGet(req, res) {
   res.render("signUp");
 }
 
-async function signUpPost(req, res, next) {
+export async function signUpPost(req, res, next) {
    // Add validation and sanitization
   await body("firstname")
     .trim()
@@ -75,7 +78,7 @@ async function signUpPost(req, res, next) {
       return res.status(400).json({ error: "User already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await hash(password, 10);
 
     const user =  await prisma.users.create({
       data: {
@@ -95,17 +98,18 @@ async function signUpPost(req, res, next) {
   }
 }
 
-async function appGet(req, res) {
+export async function appGet(req, res) {
   res.render("app");
 }
 
-async function logInGet(req, res) {
+// Login page 
+export async function logInGet(req, res) {
   res.render("login");
 }
 
 const JWT_SECRET = process.env.JWT_SECRET_KEY
 
-async function logInPost(req, res, next) {
+export async function logInPost(req, res, next) {
   // Add validation and sanitization
   await body("email")
     .trim()
@@ -138,7 +142,7 @@ async function logInPost(req, res, next) {
     }
 
     // Compare password with hashed password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await compare(password, user.password);
 
     // If password does not match, return error
     if (!isMatch) {
@@ -163,11 +167,4 @@ async function logInPost(req, res, next) {
   }
 }
 
-module.exports = {
-  homePage,
-  signUpGet,
-  signUpPost,
-  logInGet,
-  logInPost,
-  appGet,
-};
+

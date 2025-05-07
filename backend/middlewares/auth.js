@@ -1,10 +1,12 @@
-require("dotenv").config();
+import dotenv from 'dotenv';
+import jwt from "jsonwebtoken";
 
-const jwt = require("jsonwebtoken");
+dotenv.config();
+
 const JWT_SECRET = process.env.JWT_SECRET_KEY;
 
 
-function authenticateToken(req, res, next) {
+ export function authenticateToken(req, res, next) {
     const token = req.cookies.token;
   
     if (!token) {
@@ -19,5 +21,5 @@ function authenticateToken(req, res, next) {
     });
   }
 
-  module.exports = { authenticateToken };
+ 
   

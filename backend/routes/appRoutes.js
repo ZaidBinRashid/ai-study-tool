@@ -1,18 +1,19 @@
-const express = require('express');
-const router = express.Router();
-const controller = require('../controllers/appController');
-const { authenticateToken } = require('../middlewares/auth');
+import express from 'express';
+import { homePage, signUpGet, signUpPost, logInGet, logInPost, appGet } from '../controllers/appController.js';
+import { authenticateToken } from '../middlewares/auth.js';
 
-router.get('/', controller.homePage);
+const router = express.Router();
+
+router.get('/', homePage);
 
 // Sign-up routes
-router.get('/signup', controller.signUpGet);
-router.post('/signup', controller.signUpPost);
+router.get('/signup', signUpGet);
+router.post('/signup', signUpPost);
 
 // login routes
-router.get('/login', controller.logInGet);
-router.post('/login', controller.logInPost);
+router.get('/login', logInGet);
+router.post('/login', logInPost);
 
-router.get('/app', authenticateToken, controller.appGet);
+router.get('/app', authenticateToken, appGet);
 
-module.exports = router;
+export default router;
