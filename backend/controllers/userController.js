@@ -146,7 +146,7 @@ export async function logInPost(req, res, next) {
 
     // If password does not match, return error
     if (!isMatch) {
-      return res.status(400).json({ error: "Invalid credentials" });
+      return res.status(400).send({ error: "Invalid credentials" });
     }
 
     // Generate JWT token

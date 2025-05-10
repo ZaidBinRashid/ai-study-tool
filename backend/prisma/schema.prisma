@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
- output   = "./node_modules/@prisma/client"
+  output   = "./node_modules/@prisma/client"
 }
 
 datasource db {
@@ -15,4 +15,37 @@ model users {
   username  String? @db.VarChar(255)
   password  String  @db.VarChar(255)
   email     String  @unique @db.VarChar(255)
+  pdfs      PDF[]
+}
+
+model PDF {
+  id         Int      @id @default(autoincrement())
+  fileName   String
+  fileUrl    String
+  uploadedAt DateTime @default(now())
+
+  userId Int
+  user   users @relation(fields: [userId], references: [id])
+
+  summary    Summary?
+  flashcards Flashcard[]
+}
+
+model Summary {
+  id        Int      @id @default(autoincrement())
+  content   String // summarized text
+  createdAt DateTime @default(now())
+
+  pdfId Int @unique
+  pdf   PDF @relation(fields: [pdfId], references: [id])
+}
+
+model Flashcard {
+  id        Int      @id @default(autoincrement())
+  question  String
+  answer    String
+  createdAt DateTime @default(now())
+
+  pdfId Int
+  pdf   PDF @relation(fields: [pdfId], references: [id])
 }
