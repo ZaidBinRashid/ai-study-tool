@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>App</title>
     <!-- <link rel="stylesheet" href="/styles.css"> -->
-</head>
-<body>
+  </head>
+  <body>
     <header>
-        <h1>ai-study</h1>
+      <h1>ai-study</h1>
     </header>
     <main>
-        
+      <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="pdf" />
+        <button type="submit">Upload PDF</button>
+      </form>
+
     </main>
     <footer>
-        <p>&copy; 2023 Your Company</p>
-        <p><a href="/">Log Out</a></a></p>
+      <p>&copy; 2023 Your Company</p>
+      <p><a href="/logout">Log Out</a></p>
     </footer>
-</body>
+  </body>
 </html>

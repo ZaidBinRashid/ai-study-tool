@@ -2,59 +2,32 @@ import { hash, compare } from "bcrypt";
 import { body, validationResult } from "express-validator";
 import { PrismaClient } from '@prisma/client';
 import jwt from "jsonwebtoken";
-import dotenv from 'dotenv';
-
-dotenv.config();
+import 'dotenv/config';
 
 const prisma = new PrismaClient();
+const JWT_SECRET = process.env.JWT_SECRET_KEY;
 
 // Home page
 export async function homePage(req, res) {
   res.render("home", { user: req.user });
 }
 
-// Sign-up page 
+// Sign-up page (GET)
 export async function signUpGet(req, res) {
   res.render("signUp");
 }
 
+// Sign-up page (POST)
 export async function signUpPost(req, res, next) {
-   // Add validation and sanitization
-  await body("firstname")
-    .trim()
-    .escape()
-    .notEmpty()
-    .withMessage("First name is required")
-    .run(req);
-  await body("lastname")
-    .trim()
-    .escape()
-    .notEmpty()
-    .withMessage("Last name is required")
-    .run(req);
-  await body("username")
-    .trim()
-    .escape()
-    .notEmpty()
-    .withMessage("User name is required")
-    .run(req);
-  await body("email")
-    .trim()
-    .isEmail()
-    .withMessage("Email is not valid")
-    .run(req);
-  await body("password")
-    .trim()
-    .isLength({ min: 8 })
-    .withMessage("Password must be at least 8 characters long")
-    .run(req);
-  await body("confirmPassword")
-    .trim()
-    .isLength({ min: 8 })
-    .withMessage("Confirm Password must be at least 8 characters long")
-    .run(req);
+  await Promise.all([
+    body("firstname").trim().escape().notEmpty().withMessage("First name is required").run(req),
+    body("lastname").trim().escape().notEmpty().withMessage("Last name is required").run(req),
+    body("username").trim().escape().notEmpty().withMessage("Username is required").run(req),
+    body("email").trim().isEmail().withMessage("Valid email is required").run(req),
+    body("password").trim().isLength({ min: 8 }).withMessage("Password must be at least 8 characters").run(req),
+    body("confirmPassword").trim().isLength({ min: 8 }).withMessage("Confirm Password must be at least 8 characters").run(req),
+  ]);
 
-  // Check for validation errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.render("signUp", { errors: errors.array() });
@@ -69,18 +42,20 @@ export async function signUpPost(req, res, next) {
   }
 
   try {
-    // Check if user already exists
-    const existingUser = await prisma.users.findUnique({
+    // Check for existing user by email
+    const existingUser = await prisma.user.findUnique({
       where: { email },
     });
 
     if (existingUser) {
-      return res.status(400).json({ error: "User already exists" });
+      return res.render("signUp", {
+        errors: [{ msg: "Email already in use" }],
+      });
     }
 
     const hashedPassword = await hash(password, 10);
 
-    const user =  await prisma.users.create({
+    await prisma.user.create({
       data: {
         firstname,
         lastname,
@@ -88,41 +63,31 @@ export async function signUpPost(req, res, next) {
         password: hashedPassword,
         email,
       },
-    });  
-      
-  
-    res.redirect("/login");
+    });
 
+    res.redirect("/login");
   } catch (err) {
     return next(err);
   }
 }
 
+// App page
 export async function appGet(req, res) {
   res.render("app");
 }
 
-// Login page 
+// Login page (GET)
 export async function logInGet(req, res) {
   res.render("login");
 }
 
-const JWT_SECRET = process.env.JWT_SECRET_KEY
-
+// Login page (POST)
 export async function logInPost(req, res, next) {
-  // Add validation and sanitization
-  await body("email")
-    .trim()
-    .isEmail()
-    .withMessage("Email is not valid")
-    .run(req);
-  await body("password")
-    .trim()
-    .isLength({ min: 8 })
-    .withMessage("Password must be at least 8 characters long")
-    .run(req);
+  await Promise.all([
+    body("email").trim().isEmail().withMessage("Email is not valid").run(req),
+    body("password").trim().isLength({ min: 8 }).withMessage("Password must be at least 8 characters").run(req),
+  ]);
 
-  // Check for validation errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.render("login", { errors: errors.array() });
@@ -131,34 +96,24 @@ export async function logInPost(req, res, next) {
   const { email, password } = req.body;
 
   try {
-    // Check if user exists
-    const user = await prisma.users.findUnique({
-      where: { email },
-    });
+    const user = await prisma.user.findUnique({ where: { email } });
 
-    // If user does not exist, return error
-    if (!user) {
-      return res.status(400).json({ error: "Invalid credentials" });
+    if (!user || !(await compare(password, user.password))) {
+      return res.status(401).render("login", {
+        errors: [{ msg: "Invalid email or password" }],
+      });
     }
 
-    // Compare password with hashed password
-    const isMatch = await compare(password, user.password);
-
-    // If password does not match, return error
-    if (!isMatch) {
-      return res.status(400).send({ error: "Invalid credentials" });
-    }
-
-    // Generate JWT token
-    const token = jwt.sign({ id: user.id, email:user.email},
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
       JWT_SECRET,
       { expiresIn: "1h" }
-    )
+    );
 
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      maxAge: 3600000, // 1 hour
+      maxAge: 3600000,
     });
 
     res.redirect("/app");
@@ -167,4 +122,8 @@ export async function logInPost(req, res, next) {
   }
 }
 
-
+// Logout
+export async function logOut(req, res) {
+  res.clearCookie("token");
+  res.redirect("/login");
+}

@@ -1,6 +1,8 @@
 import express from 'express';
-import { homePage, signUpGet, signUpPost, logInGet, logInPost, appGet } from '../controllers/userController.js';
-import { authenticateToken } from '../middlewares/auth.js';
+import { homePage, signUpGet, signUpPost, logInGet, logInPost, appGet, logOut } from '../controllers/userController.js';
+import { uploadPdfHandler } from '../controllers/pdfController.js';
+import { authenticateToken} from '../middlewares/auth.js';
+import { upload } from '../middlewares/upload.js';
 
 const router = express.Router();
 
@@ -14,6 +16,12 @@ router.post('/signup', signUpPost);
 router.get('/login', logInGet);
 router.post('/login', logInPost);
 
+// logout route
+router.get('/logout', logOut); 
+
+// App routes
 router.get('/app', authenticateToken, appGet);
+router.post('/upload', authenticateToken, upload.single("pdf"), uploadPdfHandler);
+
 
 export default router;

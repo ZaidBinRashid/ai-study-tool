@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "./node_modules/@prisma/client"
 }
 
 datasource db {
@@ -8,36 +7,43 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model users {
+
+
+model User {
   id        Int     @id @default(autoincrement())
-  firstname String  @unique @db.VarChar(255)
+  firstname String  @db.VarChar(255)
   lastname  String  @db.VarChar(255)
-  username  String? @db.VarChar(255)
+  username  String  @unique @db.VarChar(255)
   password  String  @db.VarChar(255)
   email     String  @unique @db.VarChar(255)
-  pdfs      PDF[]
+
+  pdfs      Pdf[]
 }
 
-model PDF {
-  id         Int      @id @default(autoincrement())
+model Pdf {
+  id         Int       @id @default(autoincrement())
   fileName   String
   fileUrl    String
-  uploadedAt DateTime @default(now())
+  uploadedAt DateTime  @default(now())
 
   userId Int
-  user   users @relation(fields: [userId], references: [id])
+  user   User     @relation(fields: [userId], references: [id])
 
   summary    Summary?
   flashcards Flashcard[]
+
+  @@index([userId])
 }
 
 model Summary {
   id        Int      @id @default(autoincrement())
-  content   String // summarized text
+  content   String
   createdAt DateTime @default(now())
 
-  pdfId Int @unique
-  pdf   PDF @relation(fields: [pdfId], references: [id])
+  pdfId Int  @unique
+  pdf   Pdf  @relation(fields: [pdfId], references: [id])
+
+  @@index([pdfId])
 }
 
 model Flashcard {
@@ -47,5 +53,7 @@ model Flashcard {
   createdAt DateTime @default(now())
 
   pdfId Int
-  pdf   PDF @relation(fields: [pdfId], references: [id])
+  pdf   Pdf @relation(fields: [pdfId], references: [id])
+
+  @@index([pdfId])
 }
