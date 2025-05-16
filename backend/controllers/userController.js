@@ -116,6 +116,8 @@ export async function logInPost(req, res, next) {
       maxAge: 3600000,
     });
 
+
+
     res.redirect("/app");
   } catch (err) {
     return next(err);

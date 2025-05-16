@@ -1,20 +1,13 @@
 import "./App.css";
-
-
-import React, { useState, useEffect } from 'react';
+import UploadPdf from "./components/uploadPdf";
 
 function App() {
-  const [data, setData] = useState(null);
-
-  useEffect(() => {
-    fetch('http://localhost:5000/')
-      .then(response => response.json())
-      .then(data => setData(data));
-  }, []);
-
   return (
-    <div>
-      {data ? <p>{data.message}</p> : <p>Loading...</p>}
+    <div className="App">
+      <header className="App-header">
+        <h1>AI Study App</h1>
+      </header>
+      <UploadPdf/>
     </div>
   );
 }

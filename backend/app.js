@@ -12,7 +12,13 @@ const __dirname = dirname(__filename);
 
 const app = express();
 
-app.use(cors());
+app.use(cors(
+    {
+        origin: process.env.CLIENT_URL,
+        credentials: true,
+    }
+));
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(join(__dirname, "public")));
@@ -22,5 +28,7 @@ app.set('view engine', 'ejs');
 app.set('views', resolve('./views'));
 
 app.use('/', router);
+app.use("/uploads", express.static("uploads"));
+
 
 export default app;
