@@ -1,4 +1,3 @@
-// middleware/upload.js (recommended structure)
 import multer from "multer";
 
 const storage = multer.diskStorage({

@@ -28,7 +28,9 @@ app.set('view engine', 'ejs');
 app.set('views', resolve('./views'));
 
 app.use('/', router);
-app.use("/uploads", express.static("uploads"));
+app.use("/uploads", express.static(join(__dirname, "uploads")));
+
+
 
 
 export default app;
